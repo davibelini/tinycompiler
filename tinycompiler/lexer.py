@@ -30,10 +30,13 @@ class Lexer:
             self.advance()
 
     def skip_comment(self):
-        pass
+        if self.cur_char == '/' and self.peek() == '/':
+            while self.cur_char != "\n":
+                self.advance()
 
     def get_token(self):
         self.skip_whitespace()
+        self.skip_comment()
         token = ''
 
         if self.cur_char == '+':
@@ -85,6 +88,17 @@ class Lexer:
 
         elif self.cur_char == '\0':
             token = Token(self.cur_char, TokenType.EOF)
+
+        elif self.cur_char == '"':
+            self.advance()
+            start_pos = self.cur_pos
+
+            while self.cur_char != '"':
+                if self.cur_char in "\r\n\t%\\":
+                    self.abort(f"unexpected character '{self.cur_char}'")
+                self.advance()
+
+            token = Token(self.source[start_pos:self.cur_pos], TokenType.STRING)
 
         else:
             pass
